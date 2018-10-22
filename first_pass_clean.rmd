@@ -1,0 +1,140 @@
+Data Wrangling DATA 1030 Project
+
+```{r setup, include = FALSE, cache = FALSE}
+knitr::opts_chunk$set(error = FALSE)
+knitr::opts_chunk$set(warning=FALSE)
+knitr::opts_chunk$set(message=FALSE)
+knitr::opts_chunk$set(results="hold")
+knitr::opts_chunk$set(echo=FALSE)
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+```{r}
+
+library(tidyverse)
+library(broom)
+library(reshape2)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+
+```
+
+Read in data
+
+```{r}
+goog_search_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/flu_searches_conn.csv')
+head(goog_search_df)
+
+who_prior_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/FluViewPhase2Data_State/WHO_NREVSS_Combined_prior_to_2015_16.csv')
+head(who_prior_df)
+
+who_clin_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/FluViewPhase2Data_State/WHO_NREVSS_Clinical_Labs.csv')
+head(who_clin_df)
+
+weather_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/hartford_weather.csv')
+head(weather_df)
+
+```
+
+Clean data
+
+```{r}
+
+new_cols = colsplit(goog_search_df$Month, "-", c("year", "week"))
+
+goog_tidy = cbind(new_cols, goog_search_df[,-1])
+head(goog_tidy)
+
+names(goog_tidy) = tolower(names(goog_tidy))
+names(who_prior_df) = tolower(names(who_prior_df))
+names(who_clin_df) = tolower(names(who_clin_df))
+names(weather_df) = tolower(names(weather_df))
+
+goog_tidy = goog_tidy %>%
+  rowwise() %>% 
+  mutate(flu.pharm = sum(zanamivir, oseltamivir, relenza, as.numeric(tamiflu))) 
+
+goog_tidy = goog_tidy[ , -c(3, 6, 7, 8)]
+head(goog_tidy)
+
+who_prior_tidy = who_prior_df %>%
+  select(region, year, week, total.specimens, percent.positive) %>%
+  filter(region == "Connecticut")
+head(who_prior_tidy)
+
+who_clin_tidy = who_clin_df %>%
+  select(region, year, week, total.specimens, percent.positive) %>%
+  filter(region == "Connecticut")
+head(who_clin_tidy)
+
+weather_tidy = weather_df[,-c(1,2)]
+head(weather_tidy)
+
+weather_tidy = weather_tidy %>%
+  mutate(week = as.integer(strftime(date, format = "%V"))) %>%
+  mutate(year = as.integer(format(as.Date(weather_tidy$date, format="%Y-%m-%d"),"%Y")))
+weather_tidy[,c(4,21, 22)]
+
+weather_tidy = weather_tidy[,c(7,9,10, 21, 22)]
+head(weather_tidy)
+
+week_sum = weather_tidy %>%
+  group_by(year, week) %>%
+  summarize(median_tmax = median(tmax), 
+            median_tmin = median(tmin),
+            median_t = median(c(median_tmax, median_tmin)),
+            total_prcp = sum(prcp))
+week_sum
+
+
+```
+
+Merge datasets
+
+```{r}
+
+tidy_who = rbind(who_prior_tidy, who_clin_tidy)
+tidy_who
+
+clean_df = left_join(tidy_who, goog_tidy, by = c('year', 'week'))
+
+clean_df2 = left_join(clean_df, week_sum, by = c('year', 'week')) # includes weather data
+
+clean_df2
+
+```
+
+Final Clean
+
+```{r}
+
+clean_df = clean_df[,-1]
+clean_df = na_if(clean_df, "X")
+clean_df
+
+clean_df2 = na_if(clean_df2, "X")
+clean_df2
+
+```
+
+Export to CSV
+
+```{r}
+
+#write.csv(clean_df, "flu_data.csv", row.names = FALSE) # with NAs included for now
+
+write.csv(clean_df2, "weather_flu_google_0.csv", row.names = FALSE) # with NAs included; weather included
+
+```
+
+
+
+
+
+
+
+
+
+
+

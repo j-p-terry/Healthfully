@@ -1,0 +1,107 @@
+
+Load packages
+```{r}
+
+library(lubridate)
+library(dplyr)
+
+```
+Load main data
+```{r}
+
+data_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/weather_flu_google_4.csv')
+head(data_df)
+
+```
+Load new data
+```{r}
+
+rates_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_overall.csv')
+rates_df = rates_df[,-c(1,2)]
+head(rates_df)
+
+rates_04_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_0-4.csv')
+rates_517_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_5-17.csv')
+rates_1849_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_18-49.csv')
+rates_5064_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_50-64.csv')
+rates_65_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/surveillance_65plus.csv')
+
+```
+Clean new data
+```{r}
+
+names(rates_df) = tolower(names(rates_df))
+head(rates_df)
+
+rates_df = rates_df %>%
+  #rename(year = mmwr.year) %>%
+  #rename(week = mmwr.week) %>%
+  #rename(all_rate = weekly.rate) %>%
+  select(year, week, all_rate)
+
+names(rates_04_df) = tolower(names(rates_04_df))
+
+rates_04_df = rates_04_df %>%
+  rename(year = mmwr.year) %>%
+  rename(week = mmwr.week) %>%
+  rename(rate_0_4 = weekly.rate) %>%
+  select(year, week, rate_0_4)
+head(rates_04_df)
+
+names(rates_517_df) = tolower(names(rates_517_df))
+
+rates_517_df = rates_517_df %>%
+  rename(year = mmwr.year) %>%
+  rename(week = mmwr.week) %>%
+  rename(rate_5_17 = weekly.rate) %>%
+  select(year, week, rate_5_17)
+head(rates_517_df)
+
+names(rates_1849_df) = tolower(names(rates_1849_df))
+
+rates_1849_df = rates_1849_df %>%
+  rename(year = mmwr.year) %>%
+  rename(week = mmwr.week) %>%
+  rename(rate_18_49 = weekly.rate) %>%
+  select(year, week, rate_18_49)
+head(rates_1849_df)
+
+names(rates_5064_df) = tolower(names(rates_5064_df))
+
+rates_5064_df = rates_5064_df %>%
+  rename(year = mmwr.year) %>%
+  rename(week = mmwr.week) %>%
+  rename(rate_50_64 = weekly.rate) %>%
+  select(year, week, rate_50_64)
+head(rates_5064_df)
+
+names(rates_65_df) = tolower(names(rates_65_df))
+
+rates_65_df = rates_65_df %>%
+  rename(year = mmwr.year) %>%
+  rename(week = mmwr.week) %>%
+  rename(rate_65_plus = weekly.rate) %>%
+  select(year, week, rate_65_plus)
+head(rates_65_df)
+
+```
+
+Merge new data and main data
+```{r}
+
+clean_df = left_join(data_df, rates_df, by = c('year', 'week'))
+clean_df = left_join(clean_df, rates_04_df, by = c('year', 'week'))
+clean_df = left_join(clean_df, rates_517_df, by = c('year', 'week'))
+clean_df = left_join(clean_df, rates_1849_df, by = c('year', 'week'))
+clean_df = left_join(clean_df, rates_5064_df, by = c('year', 'week'))
+clean_df = left_join(clean_df, rates_65_df, by = c('year', 'week'))
+clean_df
+
+```
+
+Write to CSV
+```{r}
+
+write.csv(clean_df, "weather_flu_google_5.csv", row.names = FALSE) 
+
+```

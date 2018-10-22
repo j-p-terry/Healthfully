@@ -1,0 +1,61 @@
+
+```{r}
+
+library(lubridate)
+library(dplyr)
+
+```
+
+
+```{r}
+
+humid_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/local_climatological_data.csv')
+head(humid_df)
+
+humid_df = humid_df[,c(6, 17)]
+head(humid_df)
+
+data_df = read.csv('C:/Users/sflan/Dropbox (Brown)/Healthfully/weather_flu_google.csv')
+head(data_df)
+
+```
+
+```{r}
+
+names(humid_df) = tolower(names(humid_df))
+
+humid_df = humid_df %>%
+  mutate(year = as.integer(format(as.Date(humid_df$date, format="%Y-%m-%d"),"%Y"))) %>%
+  #mutate(date2 = as.integer(format(as.Date(humid_df$date, format="%Y-%m-%d"),"%Y%m%d"))) %>%
+ # mutate(date2 = ymd(date2)) %>%
+  #mutate(week = week(date2))
+  mutate(week = as.integer(strftime(date, format = "%V"))) #%>%
+
+
+humid_df = humid_df[,-1]
+humid_df
+
+humid_df2 = humid_df %>%
+  group_by(year, week) %>%
+  summarize(humidity = median(as.numeric(hourlyrelativehumidity)))
+humid_df2
+
+
+```
+
+```{r}
+
+
+clean_df = left_join(data_df, humid_df2, by = c('year', 'week'))
+
+clean_df
+```
+
+```{r}
+
+write.csv(clean_df, "weather_flu_google_2.csv", row.names = FALSE) 
+
+```
+
+
+
