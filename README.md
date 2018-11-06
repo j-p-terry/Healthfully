@@ -7,4 +7,4 @@ Files for data cleaning/merging/munging: flim_eda_analysis, clean_google_spencer
 
 Files for EDA: flim_eda_analysis, jason_eda.py, eda_spencer.ipynb
 
-Files for Machine Learning and Visualizations: flim_machine_learning, predictors_jason.py,
+Files for Machine Learning and Visualizations: flim_machine_learning, predictors_jason.py, ml_spencer.ipynb
